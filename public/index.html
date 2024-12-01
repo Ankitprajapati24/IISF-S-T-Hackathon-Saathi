@@ -1,99 +1,224 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hackathon Project</title>
   <style>
-    form {
-      text-align: center;
-      margin-top: 50px;
+    /* Global Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f4f4f4, #eaeaea);
     }
-    input[type="text"] {
-      font-size: 2em;
-      text-align: center;
-      width: 200px;
-      letter-spacing: 5px;
+
+    /* Status Container */
+    .status-container {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 20px 0;
     }
-    button {
-      font-size: 1.5em;
-      margin-top: 20px;
+
+    /* Individual Row */
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      background: white;
+      border: 2px solid #007bff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      gap: 15px;
+    }
+
+    .status-row input[type="checkbox"] {
+      transform: scale(1.5);
+      cursor: pointer;
+    }
+
+    .btn {
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      color: #fff;
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn.schedule {
+      background-color: #28a745;
+    }
+
+    .btn.schedule:hover {
+      background-color: #218838;
+    }
+
+    .btn.edit {
+      background-color: #007bff;
+    }
+
+    .btn.edit:hover {
+      background-color: #0056b3;
+    }
+
+    /* Modal Styling */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    .modal-content input,
+    .modal-content button {
+      margin-top: 15px;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #007bff;
+      border-radius: 5px;
+      outline: none;
+    }
+
+    .modal-content button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .modal-content button:hover {
+      background-color: #0056b3;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 20px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <form id="statusForm">
-    <input type="text" id="statusInput" maxlength="8" />
-    <button type="submit">Update</button>
-  </form>
+  <!-- Status Rows -->
+  <div class="status-container" id="statusContainer">
+    <!-- Rows will be dynamically added here -->
+  </div>
+
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModal">&times;</span>
+      <h2>Edit Details</h2>
+      <input type="text" id="medicineName" placeholder="Enter Medicine Name" />
+      <input type="time" id="scheduleTime" />
+      <button id="saveChanges">Save Changes</button>
+    </div>
+  </div>
+
   <script>
-    // Fetch and display data in the input field
-    async function fetchData() {
-      try {
-        const response = await fetch('/api/data');
-        const data = await response.json();
+    // Example data
+    const exampleStatuses = [
+      { checked: false, medicine: 'Medicine A', time: '08:00' },
+      { checked: false, medicine: 'Medicine B', time: '12:00' },
+      { checked: true, medicine: 'Medicine C', time: '18:00' },
+      { checked: false, medicine: 'Medicine D', time: '21:00' }
+    ];
 
-        // Extract statuses as a single string
-        const statuses = Object.values(data).map(item => item.status).join('');
-        document.getElementById('statusInput').value = statuses;
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
+    let selectedRowIndex = null;
+
+    // Populate Status Rows
+    function populateStatusRows(statuses) {
+      const container = document.getElementById('statusContainer');
+      container.innerHTML = ''; // Clear existing rows
+
+      statuses.forEach((status, index) => {
+        const row = document.createElement('div');
+        row.classList.add('status-row');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = status.checked;
+
+        const scheduleButton = document.createElement('button');
+        scheduleButton.textContent = `Scheduled at ${status.time}`;
+        scheduleButton.classList.add('btn', 'schedule');
+
+        const editButton = document.createElement('button');
+        editButton.textContent = 'Edit';
+        editButton.classList.add('btn', 'edit');
+        editButton.addEventListener('click', () => openEditModal(index, status));
+
+        row.appendChild(checkbox);
+        row.appendChild(scheduleButton);
+        row.appendChild(editButton);
+
+        container.appendChild(row);
+      });
     }
 
-    // Update statuses when the form is submitted
-    async function updateStatuses(event) {
-      event.preventDefault(); // Prevent form submission
-
-      const input = document.getElementById('statusInput');
-      const newValue = input.value.trim();
-
-      // Validate the input
-      if (!/^[01]{8}$/.test(newValue)) {
-        alert('Invalid input. Please enter exactly 8 digits (0 or 1).');
-        return;
-      }
-
-      try {
-        // Send the new value to the backend
-        await fetch('/api/update-statuses', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ statuses: newValue.split('').map(Number) })
-        });
-
-        alert('Statuses updated successfully!');
-      } catch (error) {
-        console.error('Error updating statuses:', error);
-      }
+    // Open Modal for Editing
+    function openEditModal(index, status) {
+      selectedRowIndex = index;
+      document.getElementById('medicineName').value = status.medicine;
+      document.getElementById('scheduleTime').value = status.time;
+      document.getElementById('editModal').style.display = 'flex';
     }
 
-    // Attach event listener to the form
-    document.getElementById('statusForm').addEventListener('submit', updateStatuses);
+    // Close Modal
+    document.getElementById('closeModal').addEventListener('click', () => {
+      document.getElementById('editModal').style.display = 'none';
+    });
 
-    // Auto-refresh the statuses every second
-    setInterval(fetchData, 10000);
+    // Save Changes
+    document.getElementById('saveChanges').addEventListener('click', () => {
+      const medicineName = document.getElementById('medicineName').value;
+      const scheduleTime = document.getElementById('scheduleTime').value;
 
-    // Fetch the initial data
-    fetchData();
+      if (selectedRowIndex !== null) {
+        exampleStatuses[selectedRowIndex].medicine = medicineName;
+        exampleStatuses[selectedRowIndex].time = scheduleTime;
+        populateStatusRows(exampleStatuses);
+        document.getElementById('editModal').style.display = 'none';
+      }
+    });
+
+    // Initial population with example data
+    populateStatusRows(exampleStatuses);
   </script>
-  <script>
-    // Fetch and display data in the input field
-    async function fetchData() {
-      try {
-        const response = await fetch('/api/data');
-        const data = await response.json();
-  
-        // Extract statuses as a single string
-        const statuses = Object.values(data).map(item => item.status).join('');
-        document.getElementById('statusInput').value = statuses;
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    }
-  
-    // Initial fetch when the page loads
-    fetchData();
-  </script>
-  
 </body>
 </html>

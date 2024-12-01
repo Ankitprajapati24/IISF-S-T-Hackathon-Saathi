@@ -1,156 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Modern Hackathon Project</title>
+  <title>Hackathon Project</title>
   <style>
-    /* Global Styles */
-    body {
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #f4f4f4, #eaeaea);
-    }
-
-    /* Form Styling */
     form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 30px;
+      text-align: center;
+      margin-top: 50px;
     }
-
     input[type="text"] {
-      font-size: 1.5rem;
+      font-size: 2em;
       text-align: center;
-      width: 250px;
+      width: 200px;
       letter-spacing: 5px;
-      padding: 10px;
-      border: 2px solid #007bff;
-      border-radius: 8px;
-      outline: none;
-      transition: box-shadow 0.3s;
     }
-
-    input[type="text"]:focus {
-      box-shadow: 0 0 10px #007bff;
-    }
-
     button {
-      font-size: 1.2rem;
+      font-size: 1.5em;
       margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
       cursor: pointer;
-      transition: background-color 0.3s, transform 0.2s;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-      transform: scale(1.05);
-    }
-
-    /* Notification Styling */
-    .notification {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #28a745;
-      color: #fff;
-      padding: 15px 25px;
-      border-radius: 5px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      font-size: 1rem;
-      animation: fadeInOut 3s ease-in-out;
-    }
-
-    @keyframes fadeInOut {
-      0%, 100% {
-        opacity: 0;
-        transform: translateX(-50%) translateY(20px);
-      }
-      10%, 90% {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
-    }
-
-    /* Modal Styling */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 10;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background: #fff;
-      border-radius: 10px;
-      padding: 30px;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    }
-
-    .close-btn {
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      font-size: 20px;
-      font-weight: bold;
-      color: #333;
-      cursor: pointer;
-      background: none;
-      border: none;
-      transition: color 0.3s;
-    }
-
-    .close-btn:hover {
-      color: #ff0000;
     }
   </style>
 </head>
 <body>
-  <!-- Input Form -->
   <form id="statusForm">
-    <input type="text" id="statusInput" maxlength="8" placeholder="Enter 8 digits" />
-    <button type="submit">Update Status</button>
+    <input type="text" id="statusInput" maxlength="8" />
+    <button type="submit">Update</button>
   </form>
-
-  <!-- Notification -->
-  <div id="notification" class="notification">Statuses updated successfully!</div>
-
-  <!-- Modal Trigger Button -->
-  <button id="openModal">Open Modal</button>
-
-  <!-- Modal -->
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <button class="close-btn" aria-label="Close">&times;</button>
-      <h2>Modern Alert</h2>
-      <p>This is a stylish alert box with interactive buttons!</p>
-      <button id="doneBtn" class="action-btn">Done</button>
-    </div>
-  </div>
-
   <script>
     // Fetch and display data in the input field
     async function fetchData() {
@@ -158,6 +32,7 @@
         const response = await fetch('/api/data');
         const data = await response.json();
 
+        // Extract statuses as a single string
         const statuses = Object.values(data).map(item => item.status).join('');
         document.getElementById('statusInput').value = statuses;
       } catch (error) {
@@ -167,78 +42,58 @@
 
     // Update statuses when the form is submitted
     async function updateStatuses(event) {
-      event.preventDefault();
+      event.preventDefault(); // Prevent form submission
 
       const input = document.getElementById('statusInput');
       const newValue = input.value.trim();
 
+      // Validate the input
       if (!/^[01]{8}$/.test(newValue)) {
-        showNotification('Invalid input. Please enter exactly 8 digits (0 or 1).', 'error');
+        alert('Invalid input. Please enter exactly 8 digits (0 or 1).');
         return;
       }
 
       try {
+        // Send the new value to the backend
         await fetch('/api/update-statuses', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ statuses: newValue.split('').map(Number) })
         });
 
-        showNotification('Statuses updated successfully!', 'success');
+        alert('Statuses updated successfully!');
       } catch (error) {
         console.error('Error updating statuses:', error);
-        showNotification('Error updating statuses. Please try again.', 'error');
       }
     }
-
-    // Show a notification
-    function showNotification(message, type) {
-      const notification = document.getElementById('notification');
-      notification.textContent = message;
-      notification.style.backgroundColor = type === 'success' ? '#28a745' : '#dc3545';
-      notification.style.display = 'block';
-      
-
-      setTimeout(() => {
-        notification.style.display = 'none';
-      }, 3000);
-    }
-
-    // Modal Logic
-    document.addEventListener("DOMContentLoaded", () => {
-      const modal = document.getElementById("modal");
-      const openModal = document.getElementById("openModal");
-      const closeModal = document.querySelector(".close-btn");
-      const doneBtn = document.getElementById("doneBtn");
-
-      openModal.addEventListener("click", () => {
-        modal.style.display = "flex";
-      });
-
-      closeModal.addEventListener("click", () => {
-        modal.style.display = "none";
-      });
-
-      doneBtn.addEventListener("click", () => {
-        modal.style.display = "none";
-        showNotification('You clicked Done!', 'success');
-      });
-
-      window.addEventListener("click", (event) => {
-        if (event.target === modal) {
-          modal.style.display = "none";
-        }
-      });
-    });
 
     // Attach event listener to the form
     document.getElementById('statusForm').addEventListener('submit', updateStatuses);
 
-    // Auto-refresh the statuses every 10 seconds
+    // Auto-refresh the statuses every second
     setInterval(fetchData, 10000);
 
     // Fetch the initial data
     fetchData();
   </script>
+  <script>
+    // Fetch and display data in the input field
+    async function fetchData() {
+      try {
+        const response = await fetch('/api/data');
+        const data = await response.json();
+  
+        // Extract statuses as a single string
+        const statuses = Object.values(data).map(item => item.status).join('');
+        document.getElementById('statusInput').value = statuses;
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+  
+    // Initial fetch when the page loads
+    fetchData();
+  </script>
+  
 </body>
 </html>

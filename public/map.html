@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GPS Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 80vh;
+      margin-bottom: 20px;
+    }
+    form {
+      text-align: center;
+    }
+    input {
+      font-size: 1.2em;
+      margin: 5px;
+      padding: 5px;
+      width: 150px;
+    }
+    button {
+      font-size: 1.2em;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <form id="gpsForm">
+    <input type="text" id="latitudeInput" placeholder="Latitude" required />
+    <input type="text" id="longitudeInput" placeholder="Longitude" required />
+    <button type="submit">Add Coordinate</button>
+  </form>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    let marker = null; // Single marker reference
+
+    // Initialize the map
+    const map = L.map('map').setView([0, 0], 2); // Centered at [0, 0], zoom level 2
+
+    // Add a tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Fetch GPS coordinates from the backend
+    async function fetchCoordinates() {
+      try {
+        const response = await fetch('/api/gps');
+        const data = await response.json();
+
+        if (data.length === 0) return; // No coordinates to display
+
+        const { latitude, longitude } = data[0];
+
+        // Clear the existing marker
+        if (marker) {
+          map.removeLayer(marker);
+        }
+
+        // Add the new marker
+        marker = L.marker([latitude, longitude]).addTo(map);
+        map.setView([latitude, longitude], 13); // Center the map on the new marker
+      } catch (error) {
+        console.error('Error fetching GPS coordinates:', error);
+      }
+    }
+
+    // Save new GPS coordinate
+    async function saveCoordinate(event) {
+      event.preventDefault();
+
+      const latitude = document.getElementById('latitudeInput').value.trim();
+      const longitude = document.getElementById('longitudeInput').value.trim();
+
+      // Validate input
+      if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
+        alert('Invalid input. Please enter valid latitude and longitude.');
+        return;
+      }
+
+      try {
+        // Send the new GPS coordinate to the backend
+        await fetch('/api/gps', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ latitude: parseFloat(latitude), longitude: parseFloat(longitude) })
+        });
+
+        // Clear the input fields
+        document.getElementById('latitudeInput').value = '';
+        document.getElementById('longitudeInput').value = '';
+
+        // Refresh the map
+        fetchCoordinates();
+      } catch (error) {
+        console.error('Error saving GPS coordinate:', error);
+      }
+    }
+
+    // Attach event listener to the form
+    document.getElementById('gpsForm').addEventListener('submit', saveCoordinate);
+
+    // Fetch the initial data
+    fetchCoordinates();
+
+    // Auto-refresh the map every 5 seconds
+    setInterval(fetchCoordinates, 5000);
+  </script>
+  <script>
+    let marker = null;
+  
+    // Fetch and display the updated GPS coordinate
+    async function fetchGPSData() {
+      try {
+        const response = await fetch('/api/gps');
+        const data = await response.json();
+  
+        if (data.length === 0) return;
+  
+        const { latitude, longitude } = data[0];
+  
+        // Remove the existing marker, if any
+        if (marker) {
+          map.removeLayer(marker);
+        }
+  
+        // Add a new marker and center the map
+        marker = L.marker([latitude, longitude]).addTo(map);
+        map.setView([latitude, longitude], 13);
+      } catch (error) {
+        console.error('Error fetching GPS data:', error);
+      }
+    }
+  
+    // Fetch GPS data when the page loads
+    fetchGPSData();
+  </script>
+  
+</body>
+</html>

@@ -62,20 +62,28 @@
       transition: background-color 0.3s ease;
     }
 
-    .btn.schedule {
-      background-color: #28a745;
-    }
-
-    .btn.schedule:hover {
-      background-color: #218838;
-    }
-
     .btn.edit {
       background-color: #007bff;
     }
 
     .btn.edit:hover {
       background-color: #0056b3;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .checkbox-container label {
+      font-size: 1rem;
+      color: #333;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+      transform: scale(1.5);
+      cursor: pointer;
     }
 
     /* Modal Styling */
@@ -160,10 +168,10 @@
   <script>
     // Example data
     const exampleData = [
-      { medicine: 'Medicine A', date: '2024-12-01', time: '08:00' },
-      { medicine: 'Medicine B', date: '2024-12-02', time: '12:00' },
-      { medicine: 'Medicine C', date: '2024-12-03', time: '18:00' },
-      { medicine: 'Medicine D', date: '2024-12-04', time: '21:00' }
+      { checked: false, medicine: 'Medicine A', date: '2024-12-01', time: '08:00' },
+      { checked: true, medicine: 'Medicine B', date: '2024-12-02', time: '12:00' },
+      { checked: false, medicine: 'Medicine C', date: '2024-12-03', time: '18:00' },
+      { checked: false, medicine: 'Medicine D', date: '2024-12-04', time: '21:00' }
     ];
 
     let selectedRowIndex = null;
@@ -185,12 +193,22 @@
           <span><strong>Time:</strong> ${item.time}</span>
         `;
 
-        const scheduleButton = document.createElement('button');
-        scheduleButton.textContent = 'Working Schedule';
-        scheduleButton.classList.add('btn', 'schedule');
-        scheduleButton.addEventListener('click', () => {
-          alert(`Schedule for ${item.medicine} on ${item.date} at ${item.time}`);
+        const checkboxContainer = document.createElement('div');
+        checkboxContainer.classList.add('checkbox-container');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = item.checked;
+        checkbox.addEventListener('change', () => {
+          item.checked = checkbox.checked;
+          console.log(`Medicine "${item.medicine}" is now ${item.checked ? 'checked' : 'unchecked'}`);
         });
+
+        const label = document.createElement('label');
+        label.textContent = 'Taken';
+
+        checkboxContainer.appendChild(checkbox);
+        checkboxContainer.appendChild(label);
 
         const editButton = document.createElement('button');
         editButton.textContent = 'Edit';
@@ -198,7 +216,7 @@
         editButton.addEventListener('click', () => openEditModal(index, item));
 
         row.appendChild(info);
-        row.appendChild(scheduleButton);
+        row.appendChild(checkboxContainer);
         row.appendChild(editButton);
 
         container.appendChild(row);
@@ -227,6 +245,7 @@
 
       if (selectedRowIndex !== null) {
         exampleData[selectedRowIndex] = {
+          checked: exampleData[selectedRowIndex].checked,
           medicine: medicineName,
           date: scheduleDate,
           time: scheduleTime

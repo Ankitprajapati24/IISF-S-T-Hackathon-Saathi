@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hackathon Project</title>
+  <title>Medicine Scheduler</title>
   <style>
     /* Global Styles */
     body {
@@ -37,12 +37,18 @@
       border: 2px solid #007bff;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      gap: 15px;
+      gap: 10px;
     }
 
-    .status-row input[type="checkbox"] {
-      transform: scale(1.5);
-      cursor: pointer;
+    .info {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .info span {
+      font-size: 1rem;
+      color: #333;
     }
 
     .btn {
@@ -143,8 +149,9 @@
   <div id="editModal" class="modal">
     <div class="modal-content">
       <span class="close-btn" id="closeModal">&times;</span>
-      <h2>Edit Details</h2>
+      <h2>Edit Medicine Schedule</h2>
       <input type="text" id="medicineName" placeholder="Enter Medicine Name" />
+      <input type="date" id="scheduleDate" />
       <input type="time" id="scheduleTime" />
       <button id="saveChanges">Save Changes</button>
     </div>
@@ -152,38 +159,45 @@
 
   <script>
     // Example data
-    const exampleStatuses = [
-      { checked: false, medicine: 'Medicine A', time: '08:00' },
-      { checked: false, medicine: 'Medicine B', time: '12:00' },
-      { checked: true, medicine: 'Medicine C', time: '18:00' },
-      { checked: false, medicine: 'Medicine D', time: '21:00' }
+    const exampleData = [
+      { medicine: 'Medicine A', date: '2024-12-01', time: '08:00' },
+      { medicine: 'Medicine B', date: '2024-12-02', time: '12:00' },
+      { medicine: 'Medicine C', date: '2024-12-03', time: '18:00' },
+      { medicine: 'Medicine D', date: '2024-12-04', time: '21:00' }
     ];
 
     let selectedRowIndex = null;
 
-    // Populate Status Rows
-    function populateStatusRows(statuses) {
+    // Populate Rows
+    function populateRows(data) {
       const container = document.getElementById('statusContainer');
       container.innerHTML = ''; // Clear existing rows
 
-      statuses.forEach((status, index) => {
+      data.forEach((item, index) => {
         const row = document.createElement('div');
         row.classList.add('status-row');
 
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = status.checked;
+        const info = document.createElement('div');
+        info.classList.add('info');
+        info.innerHTML = `
+          <span><strong>Medicine:</strong> ${item.medicine}</span>
+          <span><strong>Date:</strong> ${item.date}</span>
+          <span><strong>Time:</strong> ${item.time}</span>
+        `;
 
         const scheduleButton = document.createElement('button');
-        scheduleButton.textContent = `Scheduled at ${status.time}`;
+        scheduleButton.textContent = 'Working Schedule';
         scheduleButton.classList.add('btn', 'schedule');
+        scheduleButton.addEventListener('click', () => {
+          alert(`Schedule for ${item.medicine} on ${item.date} at ${item.time}`);
+        });
 
         const editButton = document.createElement('button');
         editButton.textContent = 'Edit';
         editButton.classList.add('btn', 'edit');
-        editButton.addEventListener('click', () => openEditModal(index, status));
+        editButton.addEventListener('click', () => openEditModal(index, item));
 
-        row.appendChild(checkbox);
+        row.appendChild(info);
         row.appendChild(scheduleButton);
         row.appendChild(editButton);
 
@@ -191,11 +205,12 @@
       });
     }
 
-    // Open Modal for Editing
-    function openEditModal(index, status) {
+    // Open Edit Modal
+    function openEditModal(index, item) {
       selectedRowIndex = index;
-      document.getElementById('medicineName').value = status.medicine;
-      document.getElementById('scheduleTime').value = status.time;
+      document.getElementById('medicineName').value = item.medicine;
+      document.getElementById('scheduleDate').value = item.date;
+      document.getElementById('scheduleTime').value = item.time;
       document.getElementById('editModal').style.display = 'flex';
     }
 
@@ -207,18 +222,22 @@
     // Save Changes
     document.getElementById('saveChanges').addEventListener('click', () => {
       const medicineName = document.getElementById('medicineName').value;
+      const scheduleDate = document.getElementById('scheduleDate').value;
       const scheduleTime = document.getElementById('scheduleTime').value;
 
       if (selectedRowIndex !== null) {
-        exampleStatuses[selectedRowIndex].medicine = medicineName;
-        exampleStatuses[selectedRowIndex].time = scheduleTime;
-        populateStatusRows(exampleStatuses);
+        exampleData[selectedRowIndex] = {
+          medicine: medicineName,
+          date: scheduleDate,
+          time: scheduleTime
+        };
+        populateRows(exampleData);
         document.getElementById('editModal').style.display = 'none';
       }
     });
 
-    // Initial population with example data
-    populateStatusRows(exampleStatuses);
+    // Initial Population
+    populateRows(exampleData);
   </script>
 </body>
 </html>

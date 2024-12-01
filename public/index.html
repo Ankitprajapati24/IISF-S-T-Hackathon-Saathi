@@ -1,111 +1,156 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Hackathon Project</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modern Hackathon Project</title>
   <style>
+    /* Global Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f4f4f4, #eaeaea);
+    }
+
+    /* Form Styling */
     form {
-      text-align: center;
-      margin-top: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 30px;
     }
+
     input[type="text"] {
-      font-size: 2em;
+      font-size: 1.5rem;
       text-align: center;
-      width: 200px;
+      width: 250px;
       letter-spacing: 5px;
+      padding: 10px;
+      border: 2px solid #007bff;
+      border-radius: 8px;
+      outline: none;
+      transition: box-shadow 0.3s;
     }
+
+    input[type="text"]:focus {
+      box-shadow: 0 0 10px #007bff;
+    }
+
     button {
-      font-size: 1.5em;
+      font-size: 1.2rem;
       margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
     }
 
-    /* styles.css */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #f4f4f4;
-}
+    button:hover {
+      background-color: #0056b3;
+      transform: scale(1.05);
+    }
 
-#openModal {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
+    /* Notification Styling */
+    .notification {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #28a745;
+      color: #fff;
+      padding: 15px 25px;
+      border-radius: 5px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      font-size: 1rem;
+      animation: fadeInOut 3s ease-in-out;
+    }
 
-#openModal:hover {
-    background-color: #0056b3;
-}
+    @keyframes fadeInOut {
+      0%, 100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      10%, 90% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
 
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-}
+    /* Modal Styling */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+    }
 
-.modal-content {
-    background-color: white;
-    border-radius: 10px;
-    width: 300px;
-    max-width: 90%;
-    padding: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    text-align: center;
-}
+    .modal-content {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
 
-.close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-    cursor: pointer;
-}
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      background: none;
+      border: none;
+      transition: color 0.3s;
+    }
 
-.close-btn:hover {
-    color: #ff0000;
-}
-
-.action-btn {
-    padding: 10px 20px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.action-btn:hover {
-    background-color: #218838;
-}
-
-
-
-
+    .close-btn:hover {
+      color: #ff0000;
+    }
   </style>
 </head>
 <body>
+  <!-- Input Form -->
   <form id="statusForm">
-    <input type="text" id="statusInput" maxlength="8" />
-    <button type="submit">Update</button>
+    <input type="text" id="statusInput" maxlength="8" placeholder="Enter 8 digits" />
+    <button type="submit">Update Status</button>
   </form>
+
+  <!-- Notification -->
+  <div id="notification" class="notification">Statuses updated successfully!</div>
+
+  <!-- Modal Trigger Button -->
+  <button id="openModal">Open Modal</button>
+
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <button class="close-btn" aria-label="Close">&times;</button>
+      <h2>Modern Alert</h2>
+      <p>This is a stylish alert box with interactive buttons!</p>
+      <button id="doneBtn" class="action-btn">Done</button>
+    </div>
+  </div>
+
   <script>
     // Fetch and display data in the input field
     async function fetchData() {
@@ -113,7 +158,6 @@ body {
         const response = await fetch('/api/data');
         const data = await response.json();
 
-        // Extract statuses as a single string
         const statuses = Object.values(data).map(item => item.status).join('');
         document.getElementById('statusInput').value = statuses;
       } catch (error) {
@@ -123,105 +167,77 @@ body {
 
     // Update statuses when the form is submitted
     async function updateStatuses(event) {
-      event.preventDefault(); // Prevent form submission
+      event.preventDefault();
 
       const input = document.getElementById('statusInput');
       const newValue = input.value.trim();
 
-      // Validate the input
       if (!/^[01]{8}$/.test(newValue)) {
-        alert('Invalid input. Please enter exactly 8 digits (0 or 1).');
+        showNotification('Invalid input. Please enter exactly 8 digits (0 or 1).', 'error');
         return;
       }
 
       try {
-        // Send the new value to the backend
         await fetch('/api/update-statuses', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ statuses: newValue.split('').map(Number) })
         });
 
-        alert('Statuses updated successfully!');
+        showNotification('Statuses updated successfully!', 'success');
       } catch (error) {
         console.error('Error updating statuses:', error);
+        showNotification('Error updating statuses. Please try again.', 'error');
       }
     }
+
+    // Show a notification
+    function showNotification(message, type) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.style.backgroundColor = type === 'success' ? '#28a745' : '#dc3545';
+      notification.style.display = 'block';
+
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 3000);
+    }
+
+    // Modal Logic
+    document.addEventListener("DOMContentLoaded", () => {
+      const modal = document.getElementById("modal");
+      const openModal = document.getElementById("openModal");
+      const closeModal = document.querySelector(".close-btn");
+      const doneBtn = document.getElementById("doneBtn");
+
+      openModal.addEventListener("click", () => {
+        modal.style.display = "flex";
+      });
+
+      closeModal.addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+
+      doneBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+        showNotification('You clicked Done!', 'success');
+      });
+
+      window.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          modal.style.display = "none";
+        }
+      });
+    });
 
     // Attach event listener to the form
     document.getElementById('statusForm').addEventListener('submit', updateStatuses);
 
-    // Auto-refresh the statuses every second
+    // Auto-refresh the statuses every 10 seconds
     setInterval(fetchData, 10000);
 
     // Fetch the initial data
     fetchData();
   </script>
-  <script>
-    // Fetch and display data in the input field
-    async function fetchData() {
-      try {
-        const response = await fetch('/api/data');
-        const data = await response.json();
-  
-        // Extract statuses as a single string
-        const statuses = Object.values(data).map(item => item.status).join('');
-        document.getElementById('statusInput').value = statuses;
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    }
-  
-    // Initial fetch when the page loads
-    fetchData();
-  </script>
-
-
-<button id="openModal">Open Modal</button>
-
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Modern Alert</h2>
-            <p>This is a stylish alert box with interactive buttons!</p>
-            <button id="doneBtn" class="action-btn">Done</button>
-        </div>
-    </div>
-
-<script>
-  // script.js
-document.addEventListener("DOMContentLoaded", () => {
-    const modal = document.getElementById("modal");
-    const openModal = document.getElementById("openModal");
-    const closeModal = document.querySelector(".close-btn");
-    const doneBtn = document.getElementById("doneBtn");
-
-    // Open modal
-    openModal.addEventListener("click", () => {
-        modal.style.display = "flex";
-    });
-
-    // Close modal
-    closeModal.addEventListener("click", () => {
-        modal.style.display = "none";
-    });
-
-    // Done button action
-    doneBtn.addEventListener("click", () => {
-        alert("You clicked Done!");
-        modal.style.display = "none";
-    });
-
-    // Close modal when clicking outside the content
-    window.addEventListener("click", (event) => {
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    });
-});
-
-</script>
-
-
 </body>
 </html>
